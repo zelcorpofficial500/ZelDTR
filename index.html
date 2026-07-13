@@ -1,102 +1,83 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
-	<title></title>
-	<meta name="generator" content="LibreOffice 26.2.3.2 (Linux)"/>
-	<meta name="created" content="00:00:00"/>
-	<meta name="changed" content="00:00:00"/>
-	<style type="text/css">
-		@page { size: 8.27in 11.69in; margin: 0.79in }
-		p { margin-bottom: 0.1in; line-height: 115%; background: transparent }
-		pre { font-size: 10pt; font-family: "Liberation Mono", monospace; background: transparent }
-	</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Zel Salon DTR System</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icon.png">
+  <style>
+    :root {
+      --bg: #09090b;
+      --card-bg: rgba(24, 24, 27, 0.9);
+      --brand-yellow: #facc15;
+      --text: #f4f4f5;
+    }
+
+    html, body {
+      margin: 0; padding: 0; width: 100%; height: 100%;
+      background-color: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overflow: hidden;
+    }
+
+    .app-container {
+      display: flex; flex-direction: column; height: 100%;
+      box-sizing: border-box;
+    }
+
+    .status-bar {
+      background: var(--card-bg);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding: calc(12px + env(safe-area-inset-top)) 16px 12px 16px;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-shrink: 0;
+    }
+
+    .system-title {
+      color: var(--text); font-size: 16px; font-weight: 800; letter-spacing: 0.03em;
+    }
+    .system-title span { color: var(--brand-yellow); }
+
+    .live-clock {
+      color: var(--brand-yellow); font-size: 14px; font-weight: 700; font-family: monospace;
+    }
+
+    iframe {
+      flex: 1; width: 100%; height: 100%; border: none; background: #ffffff;
+    }
+  </style>
 </head>
-<body lang="en-US" link="#000080" vlink="#800000" dir="ltr"><pre>&lt;!DOCTYPE html&gt;
-&lt;html lang=&quot;en&quot;&gt;
-&lt;head&gt;
-&lt;meta charset=&quot;UTF-8&quot;&gt;
-&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover&quot;&gt;
-&lt;title&gt;Zel Salon DTR System&lt;/title&gt;
-&lt;link rel=&quot;manifest&quot; href=&quot;manifest.json&quot;&gt;
-&lt;meta name=&quot;apple-mobile-web-app-capable&quot; content=&quot;yes&quot;&gt;
-&lt;meta name=&quot;apple-mobile-web-app-status-bar-style&quot; content=&quot;black-translucent&quot;&gt;
-&lt;link rel=&quot;apple-touch-icon&quot; href=&quot;icon.png&quot;&gt;
-&lt;style&gt;
-:root {
---bg: #09090b;
---card-bg: rgba(24, 24, 27, 0.9);
---brand-yellow: #facc15;
---text: #f4f4f5;
-}
+<body>
 
-html, body {
-margin: 0; padding: 0; width: 100%; height: 100%;
-background-color: var(--bg);
-font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, sans-serif;
-overflow: hidden;
-}
+  <div class="app-container">
+    <div class="status-bar">
+      <div class="system-title">ZEL SALON <span>DTR</span></div>
+      <div class="live-clock" id="clockDisplay">00:00:00 AM</div>
+    </div>
+    
+    <iframe src="https://script.google.com/macros/s/AKfycbz1AgTZZiKdtHHzILEyJk91m6SRaopaOQzQ2Q8SI34ByE6u2dct9wfbtlvB-Z7C1y21EA/exec"></iframe>
+  </div>
 
-.app-container {
-display: flex; flex-direction: column; height: 100%;
-box-sizing: border-box;
-}
+  <script>
+    function updateClock() {
+      const now = new Date();
+      let hours = now.getHours();
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      document.getElementById('clockDisplay').innerText = `${String(hours).padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
 
-/* Top utility bar to display live local tracking clock */
-.status-bar {
-background: var(--card-bg);
-border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-padding: calc(12px + env(safe-area-inset-top)) 16px 12px 16px;
-display: flex; justify-content: space-between; align-items: center;
-flex-shrink: 0;
-}
-
-.system-title {
-color: var(--text); font-size: 16px; font-weight: 800; letter-spacing: 0.03em;
-}
-.system-title span { color: var(--brand-yellow); }
-
-.live-clock {
-color: var(--brand-yellow); font-size: 14px; font-weight: 700; font-family: monospace;
-}
-
-iframe {
-flex: 1; width: 100%; height: 100%; border: none; background: #ffffff;
-}
-&lt;/style&gt;
-&lt;/head&gt;
-&lt;body&gt;
-
-&lt;div class=&quot;app-container&quot;&gt;
-&lt;div class=&quot;status-bar&quot;&gt;
-&lt;div class=&quot;system-title&quot;&gt;ZEL SALON &lt;span&gt;DTR&lt;/span&gt;&lt;/div&gt;
-&lt;div class=&quot;live-clock&quot; id=&quot;clockDisplay&quot;&gt;00:00:00 AM&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;iframe src=&quot;https://script.google.com/macros/s/AKfycbz1AgTZZiKdtHHzILEyJk91m6SRAopa0QzQ2Q8SI34ByE6u2dct9wfbtlvB-Z7C1y2lEA/exec&quot;&gt;&lt;/iframe&gt;
-&lt;/div&gt;
-
-&lt;script&gt;
-// Live clock function to give employees immediate visual verification of logging time
-function updateClock() {
-const now = new Date();
-let hours = now.getHours();
-const minutes = String(now.getMinutes()).padStart(2, '0');
-const seconds = String(now.getSeconds()).padStart(2, '0');
-const ampm = hours &gt;= 12 ? 'PM' : 'AM';
-hours = hours % 12;
-hours = hours ? hours : 12; // structural conversion for hour formats
-document.getElementById('clockDisplay').innerText = `${String(hours).padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
-}
-setInterval(updateClock, 1000);
-updateClock();
-
-// Standard PWA Service worker installation registry
-if ('serviceWorker' in navigator) {
-navigator.serviceWorker.register('sw.js').then(() =&gt; console.log('DTR Pipeline Ready'));
-}
-&lt;/script&gt;
-&lt;/body&gt;
-&lt;/html&gt;</pre>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').then(() => console.log('DTR Pipeline Ready'));
+    }
+  </script>
 </body>
 </html>
