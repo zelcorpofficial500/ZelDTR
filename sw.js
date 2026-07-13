@@ -1,31 +1,54 @@
-const CACHE_NAME = 'zel-dtr-v1';
+const CACHE_NAME = 'zel-dtr-v3'; // Incrementing this forces a brand new cache layer
 const ASSETS = [
-  'index.html',
-  'manifest.json',
-  'icon.png'
+  './',
+  './index.html',
+  './manifest.json',
+  './icon.png'
 ];
 
-// Install event listener for the service worker
+// Force immediate activation of the new worker
 self.addEventListener('install', (event) => {
-  // Extend the lifetime of the service worker until the promise resolves
+  self.skipWaiting();
   event.waitUntil(
-    // Open the cache with the specified name
     caches.open(CACHE_NAME).then((cache) => {
-      // Add all the assets to the cache
-      return cache.addAll(ASSETS);
+      return cache.addAll(ASSETS).catch(err => console.log("Asset caching skipped: ", err));
     })
   );
 });
 
-// Fetch event listener for the service worker
+// Clean up old caches and kill stuck loops
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cache) => {
+          if (cache !== CACHE_NAME) {
+            console.log('Clearing old system cache:', cache);
+            return caches.delete(cache);
+          }
+        })
+      );
+    }).then(() => self.clients.claim())
+  );
+});
+
+// Network-First Strategy: Always check the internet first to avoid Google Drive errors
 self.addEventListener('fetch', (event) => {
-  // Respond to the fetch event
   event.respondWith(
-    // Check if the requested resource is already in the cache
-    caches.match(event.request).then((cachedResponse) => {
-      // If the resource is in the cache, return it
-      // Otherwise, fetch the resource from the network
-      return cachedResponse || fetch(event.request);
-    })
+    fetch(event.request)
+      .then((networkResponse) => {
+        // If internet is working, update the cache copy in background
+        if (networkResponse.status === 200 && event.request.method === 'GET') {
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseClone);
+          });
+        }
+        return networkResponse;
+      })
+      .catch(() => {
+        // Only return cached version if user is completely offline
+        return caches.match(event.request);
+      })
   );
 });
