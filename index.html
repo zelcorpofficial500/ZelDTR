@@ -53,7 +53,7 @@
 
     /* Branded Matte Yellow Install Button */
     #install-btn {
-      display: none; /* Hidden by default, shown via JS if installable */
+      display: none;
       background: var(--brand-yellow);
       color: #000000;
       border: none;
@@ -66,16 +66,12 @@
       letter-spacing: 0.05em;
     }
 
-    #iframe-container {
-      flex: 1; width: 100%; height: 100%; display: flex;
-    }
-
     iframe {
       flex: 1; width: 100%; height: 100%; border: none; background: #ffffff;
     }
 
-    /* iOS Installation Instruction Banner */
-    #ios-prompt {
+    /* Universal Installation Instruction Banner */
+    #universal-prompt {
       display: none;
       position: fixed;
       bottom: 20px;
@@ -93,8 +89,8 @@
       font-size: 13px;
       text-align: center;
     }
-    #ios-prompt span { color: var(--brand-yellow); font-weight: bold; }
-    #ios-prompt .close-ios {
+    #universal-prompt span { color: var(--brand-yellow); font-weight: bold; }
+    #universal-prompt .close-prompt {
       display: block;
       margin-top: 8px;
       color: #a1a1aa;
@@ -115,13 +111,13 @@
       </div>
     </div>
     
-    <div id="iframe-container"></div>
+    <!-- Restored your exact working iframe link directly -->
+    <iframe src="https://script.google.com/macros/s/AKfycbyzlAgTZZiKdtHHzILEyJk91m6SRAopaOQzQ2Q8SI34ByE6u2dct9wfbtlvB-Z7C1y2lEA/exec"></iframe>
   </div>
 
-  <!-- Instruction popover if user is on Safari/iOS -->
-  <div id="ios-prompt">
-    Tap the <span>Share button</span> below, then select <span>'Add to Home Screen'</span> to save the Zel DTR App with its icon!
-    <div class="close-ios" onclick="document.getElementById('ios-prompt').style.display='none'">Dismiss</div>
+  <div id="universal-prompt">
+    <div id="prompt-text">Tap your browser options menu and select <span>'Add to Home Screen'</span> or <span>'Install'</span> to download the app!</div>
+    <div class="close-prompt" onclick="document.getElementById('universal-prompt').style.display='none'">Dismiss</div>
   </div>
 
   <script>
@@ -138,61 +134,58 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // Secure deployment routing loader
-    window.addEventListener('DOMContentLoaded', () => {
-      const container = document.getElementById('iframe-container');
-      const baseUrl = "https://script.google.com/macros/s/AKfycbz1AgTZZiKdtHHzILEyJk91m6SRAopaOQzQ2Q8SI34ByE6u2dct9wfbtlvB-Z7C1y2lEA/exec";
-      const accountBypass = "?authuser=0"; 
-      
-      const iframe = document.createElement('iframe');
-      iframe.src = baseUrl + accountBypass;
-      container.appendChild(iframe);
-      
-      // Intelligent iOS vs Android install feature check
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-      
-      if (isIOS && !isStandalone) {
-        // Show install button for iOS users to open instruction box
-        document.getElementById('install-btn').style.display = 'block';
-      }
-    });
-
-    // PWA Programmatic System Hooks
-    let deferredPrompt;
+    // Check if app is already running as a standalone installed app
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
     const installBtn = document.getElementById('install-btn');
+    const universalPrompt = document.getElementById('universal-prompt');
+    const promptText = document.getElementById('prompt-text');
+    
+    let deferredPrompt;
 
+    if (!isStandalone) {
+      // Always show the installer button on non-installed mobile/desktop browsers
+      installBtn.style.display = 'block';
+    }
+
+    // Native PWA Browser Hook (Chrome / Android / Edge)
     window.addEventListener('beforeinstallprompt', (e) => {
-      // Prevent standard small browser banner so our main top-bar button handles it
       e.preventDefault();
       deferredPrompt = e;
-      installBtn.style.display = 'block';
     });
 
     installBtn.addEventListener('click', async () => {
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-      
-      if (isIOS) {
-        // Pop open detailed custom popup panel for Apple Safari users
-        document.getElementById('ios-prompt').style.display = 'block';
+      // If the browser supports native automated installation prompts
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          deferredPrompt = null;
+          installBtn.style.display = 'none';
+        }
         return;
       }
 
-      if (!deferredPrompt) return;
+      // Universal platform detection for fallback instructions
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
       
-      // Fire Native Android app configuration utility
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        deferredPrompt = null;
-        installBtn.style.display = 'none';
+      if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+        // iOS Safari Instructions
+        promptText.innerHTML = "Tap the <span>Share button</span> (square with up arrow) below, then select <span>'Add to Home Screen'</span>!";
+      } else if (/CriOS/.test(userAgent)) {
+        // Chrome on iOS
+        promptText.innerHTML = "Tap the <span>Share button</span> in the address bar, then select <span>'Add to Home Screen'</span>!";
+      } else {
+        // General fallback for all other browsers/devices
+        promptText.innerHTML = "Open your browser menu (dots or lines icon) and tap <span>'Add to Home Screen'</span> or <span>'Install'</span>!";
       }
+      
+      universalPrompt.style.display = 'block';
     });
 
-    // Hide installation buttons completely if already launched as standalone application
     window.addEventListener('appinstalled', () => {
       deferredPrompt = null;
       installBtn.style.display = 'none';
+      universalPrompt.style.display = 'none';
     });
 
     if ('serviceWorker' in navigator) {
