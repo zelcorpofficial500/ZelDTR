@@ -1,11 +1,13 @@
 {
   "name": "Zel Salon DTR System",
   "short_name": "Zel DTR",
+  "id": "/ZelDTR/",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#09090b",
   "theme_color": "#09090b",
   "orientation": "portrait",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "icon.png",
